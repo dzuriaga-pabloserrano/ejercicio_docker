@@ -1,0 +1,77 @@
+#Define la versión del formato de Docker Compose que se está usando.
+#La versión 3.8 es compatible con muchas funcionalidades modernas,
+#incluyendo redes personalizadas.
+version: '3.8'
+
+#Este bloque define los servicios que componen la aplicación. 
+#Cada servicio es un contenedor Docker que se ejecutará independientemente.
+#la jerarquía de cada ítem está separada por 2 espacios
+
+services:
+
+#nombre del servicio que ejecuta el servidor Node.js.
+  backend: 
+  
+    #indica que Docker debe construir la imagen 
+    #usando el Dockerfile que está en la carpeta backend.   
+    build: ./backend 
+    
+    #expone el puerto 3000 del contenedor al puerto 3000 del host, 
+    #para que puedas acceder al backend.    
+    ports: 
+      - "3000:3000"
+      
+    #indica que el servicio backend debe iniciarse después de que el servicio mongo esté listo.
+    depends_on: 
+      - mongo
+      
+    #-opcional- conecta este servicio a la red personalizada 
+    #para que pueda comunicarse con otros servicios en esa red.      
+    networks: 
+      - app-network
+
+  frontend:
+  
+    #indica que Docker debe construir la imagen usando el Dockerfile en la carpeta frontend.
+    build: ./frontend 
+    
+    #expone el puerto 80 del contenedor (puerto estándar HTTP en Nginx) al puerto 8080 del host,
+    #para que puedas acceder a la web en http://localhost:8080.
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  mongo:
+    image: mongo:6.0 #usa la imagen oficial de MongoDB versión 6.0 desde Docker Hub.
+    ports:
+      - "27017:27017"
+      
+    #monta un volumen persistente llamado mongo-data en la ruta 
+    #/data/db dentro del contenedor, para que los datos de MongoDB se guarden 
+    #y no se pierdan al reiniciar el contenedor.
+    volumes: 
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+#Nótese la jerarquía de estos puntos
+#Define un volumen Docker llamado mongo-data. 
+#Los volúmenes permiten persistir datos fuera del ciclo de vida del contenedor,
+#evitando pérdida de datos cuando el contenedor se detiene o elimina.
+
+volumes:
+  mongo-data:
+
+#define redes personalizadas para los servicios.
+networks:
+  app-network: #es el nombre de la red personalizada que hemos creado.
+
+    #indica que la red es del tipo "bridge", 
+    #que es la red por defecto en Docker para comunicación 
+    #entre contenedores en el mismo host. 
+    #Esta red permite que los contenedores se comuniquen 
+    #entre sí usando nombres de servicio como hostnames.
+    driver: bridge
