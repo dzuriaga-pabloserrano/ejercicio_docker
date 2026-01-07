@@ -1,7 +1,7 @@
 #Define la versión del formato de Docker Compose que se está usando.
 #La versión 3.8 es compatible con muchas funcionalidades modernas,
 #incluyendo redes personalizadas.
-version: '3.8'
+version: '3.8' #esto está obsoleto desde hace 50 versiones de docker, es innecesario y genera un warning
 
 #Este bloque define los servicios que componen la aplicación. 
 #Cada servicio es un contenedor Docker que se ejecutará independientemente.
@@ -33,7 +33,11 @@ services:
   frontend:
   
     #indica que Docker debe construir la imagen usando el Dockerfile en la carpeta frontend.
-    build: ./frontend 
+    #build: ./frontend -> las 2 lineas de abajo sustituyen al dockerfile inicial
+    image: nginx:mainline-alpine3.23-perl
+    
+    volumes:
+      - ./frontend:/usr/share/nginx/html/ #esto monta un directorio local del ordenador (host) dentro del container y replica el contenido en ambas direcciones, es como enchufar un pendrive al container
     
     #expone el puerto 80 del contenedor (puerto estándar HTTP en Nginx) al puerto 8080 del host,
     #para que puedas acceder a la web en http://localhost:8080.
@@ -41,8 +45,10 @@ services:
       - "8080:80"
     depends_on:
       - backend
-    networks:
-      - app-network
+
+    #se puede borrar. Es innecesario porque el navegador hace la conexion con el backend e incluso puede ser mala práctica por si hay una vulenabilidad en el servidor de nginx porque podrian acceder a todos los servicios d eesa red
+#    networks:
+#      - app-network
 
   mongo:
     image: mongo:6.0 #usa la imagen oficial de MongoDB versión 6.0 desde Docker Hub.
@@ -52,6 +58,7 @@ services:
     #monta un volumen persistente llamado mongo-data en la ruta 
     #/data/db dentro del contenedor, para que los datos de MongoDB se guarden 
     #y no se pierdan al reiniciar el contenedor.
+    #permiten abstraerse del sistema de archivos del host, es más portable
     volumes: 
       - mongo-data:/data/db
     networks:
