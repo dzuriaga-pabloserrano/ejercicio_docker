@@ -7,6 +7,7 @@ Este repositorio define una aplicación compuesta por **tres servicios** orquest
 - **mongo**: base de datos **MongoDB** con persistencia en volumen
 
 El archivo principal de orquestación es `docker-compose.yml`.
+Para definir cómo van a estar configurados los contenedores se usan los dockerfile.
 
 ## Estructura del proyecto (a alto nivel)
 
@@ -131,4 +132,10 @@ Para parar y eliminar contenedores **y** borrar los datos de Mongo (volumen):
 
 ```bash
 docker compose down -v
+```
+
+Para consultar la interfaz web hay que acceder a:
+
+```bash
+http://localhost:8080/
 ```
